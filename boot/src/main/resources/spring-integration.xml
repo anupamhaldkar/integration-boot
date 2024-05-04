@@ -1,26 +1,53 @@
-<!-- spring-integration.xml -->
-
+<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
-       xmlns:int-file="http://www.springframework.org/schema/integration/file"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/integration
        http://www.springframework.org/schema/integration/spring-integration.xsd
-       http://www.springframework.org/schema/integration/amqp
-       http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
-       http://www.springframework.org/schema/integration/file
-       http://www.springframework.org/schema/integration/file/spring-integration-file.xsd">
+       http://www.springframework.org/schema/integration/http
+    https://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
     <!-- Define channels -->
     <int:channel id="inputChannel"/>
     <int:channel id="outputChannel"/>
+    <int:channel id="outputExternalChannel"/>
 
     <!-- Define integration flow -->
     <int:service-activator input-channel="inputChannel" output-channel="outputChannel">
         <bean class="com.integration.boot.service.ServiceHandler"/>
     </int:service-activator>
+
+
+    <int-http:outbound-gateway request-channel="inputExternalChannel"
+                              reply-channel="inputTransformChannel"
+                              id="outboundExternalGateway"
+                              url="http://localhost:8081/external-call?message={message}"
+                              http-method="GET"
+                              charset="UTF-8"
+                              expected-response-type="java.lang.String"
+                               mapped-request-headers="*"
+                               mapped-response-headers="*">
+    <int-http:uri-variable name="message" expression="payload"/>
+    </int-http:outbound-gateway>
+
+    <int:transformer input-channel="inputTransformChannel" 
+                     output-channel="outputTransformChannel"
+                     ref="transformer"
+                     method="transformToSecondCall"
+                     />
+
+    <int-http:outbound-gateway request-channel="outputTransformChannel"
+                              reply-channel="outputExternalChannel"
+                              id="outboundSecondExternalGateway"
+                              url="http://localhost:8081/external-call"
+                              http-method="POST"
+                              charset="UTF-8"
+                              expected-response-type="java.lang.String"
+                               mapped-request-headers="*"
+                               mapped-response-headers="*">
+    </int-http:outbound-gateway>                 
 
 </beans>

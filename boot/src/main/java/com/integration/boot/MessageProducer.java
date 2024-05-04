@@ -8,4 +8,7 @@ public interface MessageProducer {
 
     @Gateway(requestChannel = "inputChannel", replyChannel = "outputChannel")
     public String sendMessage(String message);
+
+    @Gateway(requestChannel = "inputExternalChannel", replyChannel = "outputExternalChannel")
+    public String externalCall(String payload);
 }
