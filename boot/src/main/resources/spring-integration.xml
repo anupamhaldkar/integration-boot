@@ -22,7 +22,7 @@
 
 
     <int-http:outbound-gateway request-channel="inputExternalChannel"
-                              reply-channel="outputExternalChannel"
+                              reply-channel="inputTransformChannel"
                               id="outboundExternalGateway"
                               url="http://localhost:8081/external-call?message={message}"
                               http-method="GET"
@@ -32,5 +32,22 @@
                                mapped-response-headers="*">
     <int-http:uri-variable name="message" expression="payload"/>
     </int-http:outbound-gateway>
+
+    <int:transformer input-channel="inputTransformChannel" 
+                     output-channel="outputTransformChannel"
+                     ref="transformer"
+                     method="transformToSecondCall"
+                     />
+
+    <int-http:outbound-gateway request-channel="outputTransformChannel"
+                              reply-channel="outputExternalChannel"
+                              id="outboundSecondExternalGateway"
+                              url="http://localhost:8081/external-call"
+                              http-method="POST"
+                              charset="UTF-8"
+                              expected-response-type="java.lang.String"
+                               mapped-request-headers="*"
+                               mapped-response-headers="*">
+    </int-http:outbound-gateway>                 
 
 </beans>
