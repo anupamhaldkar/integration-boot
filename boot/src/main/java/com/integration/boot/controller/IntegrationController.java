@@ -17,4 +17,9 @@ public class IntegrationController {
     public ResponseEntity<Object> testIntegrationMessaging(@RequestBody String message) {
         return new ResponseEntity<>(messageProducer.sendMessage(message), HttpStatus.OK);
     }
+
+    @GetMapping("/integration-external-call")
+    public ResponseEntity<Object> externalCall(@RequestParam String message) {
+        return ResponseEntity.ok(messageProducer.externalCall(message));
+    }
 }
