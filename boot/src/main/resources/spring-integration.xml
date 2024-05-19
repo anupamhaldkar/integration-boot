@@ -14,6 +14,7 @@
     <int:channel id="inputChannel"/>
     <int:channel id="outputChannel"/>
     <int:channel id="outputExternalChannel"/>
+    <int:channel id="notifyDBReplyChannel"/>
 
     <!-- Define integration flow -->
     <int:service-activator input-channel="inputChannel" output-channel="outputChannel">
@@ -25,6 +26,29 @@
                               reply-channel="outputExternalChannel"
                               id="outboundExternalGateway"
                               url="http://localhost:8081/external-call?message={message}"
+                              http-method="GET"
+                              charset="UTF-8"
+                              expected-response-type="java.lang.String"
+                               mapped-request-headers="*"
+                               mapped-response-headers="*">
+    <int-http:uri-variable name="message" expression="payload"/>
+    </int-http:outbound-gateway>
+
+    <int-http:outbound-gateway request-channel="notifyChannel"
+                              id="outboundNotifyExternalGateway"
+                              url="http://localhost:8081/notify-call?message={message}"
+                              http-method="GET"
+                              charset="UTF-8"
+                              expected-response-type="java.lang.String"
+                               mapped-request-headers="*"
+                               mapped-response-headers="*">
+    <int-http:uri-variable name="message" expression="payload"/>
+    </int-http:outbound-gateway>
+
+    <int-http:outbound-gateway request-channel="notifyDBChannel"
+                              reply-channel="notifyDBReplyChannel"
+                              id="outboundNOtifyDBExternalGateway"
+                              url="http://localhost:8081/notifyDB-call?message={message}"
                               http-method="GET"
                               charset="UTF-8"
                               expected-response-type="java.lang.String"
